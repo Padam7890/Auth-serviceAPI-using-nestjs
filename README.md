@@ -1,7 +1,3 @@
-Sure, here's the updated README without the detailed endpoints:
-
----
-
 # Authentication Microservice
 
 This repository contains an authentication microservice built using NestJS, implementing both JWT and 2-factor authentication.
