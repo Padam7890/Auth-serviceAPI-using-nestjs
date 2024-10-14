@@ -1,6 +1,6 @@
 //types
+import { HttpStatus } from '@nestjs/common';
 import { AuthorizationCode, User } from '@prisma/client';
-
 
 export enum roleEnums {
   USER = 'USER',
@@ -19,24 +19,28 @@ export type MyResponseObj = {
 };
 
 export interface IUserResponse {
-    message: string;
-    access_token: string;
-    refresh_token: string;
-    user: {
-      id: number;
-      name: string;
-      email: string;
-      password: string;
-      createdAt: Date;
-      passwordChangedAt: Date | null;
-      passwordResetToken: string | null;
-      passwordResetTokenExpire: Date | null;
-      roleId: number;
-    };
-  
+  message: string;
+  access_token: string;
+  refresh_token: string;
+  user: {
+    id: number;
+    name: string;
+    email: string;
+    password: string;
+    createdAt: Date;
+    passwordChangedAt: Date | null;
+    passwordResetToken: string | null;
+    passwordResetTokenExpire: Date | null;
+    roleId: number;
+  };
 }
 
-
 export interface AuthorizationCodeWithUser extends AuthorizationCode {
-  user: User; 
+  user: User;
+}
+
+export interface createResponseType {
+  statusCode: HttpStatus;
+  message?: string;
+  data?: any;
 }

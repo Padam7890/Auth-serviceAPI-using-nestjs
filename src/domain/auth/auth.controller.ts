@@ -32,6 +32,8 @@ import { LocalAuthGuard } from '../../core/guards/local-auth.guard';
 import { createResponse } from '../../helper/response.helper';
 import { GoogleAuthGuard } from 'src/core/guards/googleauth.guard';
 import { BlockToManyRequest } from 'src/core/guards/customTGuard.guard';
+import { Response } from 'express';
+import { createResponseType } from 'src/core/interfaces/types';
 
 // Controller For Authentication Module
 @Controller('auth')
@@ -81,7 +83,7 @@ export class AuthController {
   @UseGuards(RefreshAuthGuard)
   @Post('refresh')
   @HttpCode(HttpStatus.OK)
-  async refreshToken(@Req() request) {
+  async refreshToken(@Req() request): Promise<createResponseType> {
     const response = await this.authService.createRefreshToken(request.user.id);
     return createResponse(HttpStatus.OK, 'Refresh Token', response);
   }
@@ -106,7 +108,7 @@ export class AuthController {
     summary: 'Exchange code to Token',
     responseType: ExchangeCode,
   })
-  async exchangeCode(@Body() code: ExchangeCode) {
+  async exchangeCode(@Body() code: ExchangeCode): Promise<createResponseType> {
     const token = await this.authService.exchangeCodeWithToken(code.code);
     return createResponse(HttpStatus.OK, 'User Fetched Successfully', token);
   }
@@ -117,7 +119,7 @@ export class AuthController {
     summary: 'Forget Password',
     responseType: forgetPasswordDTO,
   })
-  async forgetPassword(@Body() forgetPasswordDTO: forgetPasswordDTO) {
+  async forgetPassword(@Body() forgetPasswordDTO: forgetPasswordDTO): Promise<createResponseType> {
     const response = await this.authService.forgetPassword(
       forgetPasswordDTO.email,
     );
@@ -130,7 +132,7 @@ export class AuthController {
     summary: 'Reset Password',
     responseType: resetPasswordDTO,
   })
-  async resetPassword(@Body() resetPasswordDTO: resetPasswordDTO) {
+  async resetPassword(@Body() resetPasswordDTO: resetPasswordDTO): Promise<createResponseType> {
     const response = await this.authService.resetPassword(resetPasswordDTO);
     return createResponse(
       HttpStatus.OK,
@@ -143,10 +145,10 @@ export class AuthController {
   @UniversalDecorator({
     summary: '2Factor Authentication',
     responseType: '',
-    role: 'USER',
+    role: process.env.ACCESS_ROLE,
   })
   @UseGuards(BlockToManyRequest)
-  async enable2fa(@Request() req): Promise<any> {
+  async enable2fa(@Request() req):Promise<createResponseType> {
     const twofaenabled = await this.authService.enable2fa(req.user.id);
     return createResponse(
       HttpStatus.OK,
@@ -155,15 +157,13 @@ export class AuthController {
     );
   }
 
-
   @Post('disable-2fa')
   @UniversalDecorator({
     summary: 'Disable 2Factor Authentication',
     responseType: '',
-    role: 'USER',
+    role: process.env.ACCESS_ROLE,
   })
-
-  async disable2fa(@Request() req): Promise<any> {
+  async disable2fa(@Request() req): Promise<createResponseType> {
     const disable2fa = await this.authService.disable2fa(req.user.id);
     return createResponse(
       HttpStatus.OK,
@@ -176,7 +176,7 @@ export class AuthController {
   @UniversalDecorator({
     summary: 'Verify 2Factor Authentication',
     responseType: '',
-    role: 'USER',
+    role: process.env.ACCESS_ROLE,
   })
   @UseGuards(BlockToManyRequest)
   async verify2fa(

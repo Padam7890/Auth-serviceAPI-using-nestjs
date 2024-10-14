@@ -171,7 +171,7 @@ export class AuthService {
     return { access_token, refresh_token };
   }
 
-  async enable2fa(id: number): Promise<any> {
+  async enable2fa(id: number): Promise<{ secret: string }> {
     const user = await this.userService.findoneByid(id);
     if (!user) {
       throw new UnauthorizedException(`User not found`);
@@ -189,7 +189,7 @@ export class AuthService {
       secret: user.twoFaSecret,
     };
   }
-  async disable2fa(id: number): Promise<any> {
+  async disable2fa(id: number): Promise<User> {
     const user = await this.userService.findoneByid(id);
 
     if (!user) {
