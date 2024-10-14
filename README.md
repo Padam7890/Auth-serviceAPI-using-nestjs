@@ -1,6 +1,6 @@
-# Authentication Microservice
+# Authentication service
 
-This repository contains an authentication microservice built using NestJS, implementing both JWT and 2-factor authentication.
+This repository contains an authentication service built using NestJS, implementing both JWT and 2-factor authentication.
 
 ## Table of Contents
 
