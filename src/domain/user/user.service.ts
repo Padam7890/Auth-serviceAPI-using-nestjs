@@ -156,6 +156,24 @@ export class UserService {
       },
     });
   }
+  async updateSecretKey(id: number, secretKey: string): Promise<User> {
+    return this.prisma.user.update({
+      where: { id },
+      data: {
+        twoFaSecret: secretKey,
+        enable2fa: true,
+      },
+    });
+  }
+  async disable2FA(id: number): Promise<User> {
+    return this.prisma.user.update({
+      where: { id },
+      data: {
+        enable2fa: false,
+        twoFaSecret: null,
+      },
+    });
+  }
 
   
 }

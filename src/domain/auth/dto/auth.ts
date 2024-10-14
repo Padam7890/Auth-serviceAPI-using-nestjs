@@ -41,3 +41,10 @@ export class ExchangeCode {
     @ApiProperty()
     code: string;
 }
+
+export class ValidateTokenDTO {
+    @IsNotEmpty()
+    @IsString()
+    @ApiProperty()
+    token: string;
+  }

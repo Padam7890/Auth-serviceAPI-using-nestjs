@@ -1,4 +1,5 @@
 import {
+  BadRequestException,
   HttpStatus,
   Inject,
   Injectable,
@@ -19,6 +20,7 @@ import { resetPasswordDTO } from './dto/auth';
 import { IUserResponse } from '../../core/interfaces/types';
 import { v4 as uuidv4 } from 'uuid';
 import { GoogleAuthService } from './google-auth.service';
+import * as speakeasy from 'speakeasy';
 
 @Injectable()
 export class AuthService {
@@ -59,6 +61,13 @@ export class AuthService {
 
   // Login Service
   async login(user: User): Promise<any> {
+    if (user.enable2fa && user.twoFaSecret) {
+      return {
+        validate2FA: `${process.env.APP_URL}/api/v1/auth/validate-2fa`,
+        message:
+          'Please send the one-time password /token from your Google Authenticator App',
+      };
+    }
     const { access_token, refresh_token } = await this.createTokens(user);
     return {
       message: 'User SignIn Successfully',
@@ -160,5 +169,55 @@ export class AuthService {
     );
     await this.googleAuthService.updateAuthCode(authorizationCode.code);
     return { access_token, refresh_token };
+  }
+
+  async enable2fa(id: number): Promise<any> {
+    const user = await this.userService.findoneByid(id);
+    if (!user) {
+      throw new UnauthorizedException(`User not found`);
+    }
+    if (user.enable2fa) {
+      return {
+        secret: user.twoFaSecret,
+      };
+    }
+    const secret = speakeasy.generateSecret();
+    console.log(secret);
+    user.twoFaSecret = secret.base32;
+    await this.userService.updateSecretKey(user.id, user.twoFaSecret);
+    return {
+      secret: user.twoFaSecret,
+    };
+  }
+  async disable2fa(id: number): Promise<any> {
+    const user = await this.userService.findoneByid(id);
+
+    if (!user) {
+      throw new UnauthorizedException('User not found');
+    }
+
+    if (!user.enable2fa) {
+      throw new UnauthorizedException('2FA is already disabled');
+    }
+
+    return this.userService.disable2FA(id);
+  }
+
+  async verify2fa(id: number, token: string): Promise<{ verified: boolean }> {
+    try {
+      const user = await this.userService.findoneByid(id);
+      if (!user) {
+        throw new UnauthorizedException(`User not found`);
+      }
+      const verified = speakeasy.totp.verify({
+        secret: user.twoFaSecret,
+        encoding: 'base32',
+        token,
+      });
+      if (verified) return { verified: true };
+      else return { verified: false };
+    } catch (error) {
+      throw new UnauthorizedException('Error Verifying token');
+    }
   }
 }

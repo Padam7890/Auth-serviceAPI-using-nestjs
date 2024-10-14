@@ -11,9 +11,21 @@ import {
   Request,
 } from '@nestjs/common';
 import { AuthService } from './auth.service';
-import { ApiBearerAuth, ApiExcludeEndpoint, ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger';
+import {
+  ApiBearerAuth,
+  ApiExcludeEndpoint,
+  ApiOperation,
+  ApiResponse,
+  ApiTags,
+} from '@nestjs/swagger';
 import { CreateUserDto } from '../user/dto/create-user.dto';
-import { ExchangeCode, forgetPasswordDTO, resetPasswordDTO, signInDTO } from './dto/auth';
+import {
+  ExchangeCode,
+  forgetPasswordDTO,
+  resetPasswordDTO,
+  signInDTO,
+  ValidateTokenDTO,
+} from './dto/auth';
 import { UniversalDecorator } from '../../common/decorators/universal.decorator';
 import { RefreshAuthGuard } from '../../core/guards/refresh-auth.guard';
 import { LocalAuthGuard } from '../../core/guards/local-auth.guard';
@@ -38,11 +50,11 @@ export class AuthController {
     body: {
       email: {
         type: 'string',
-        example: 'padamthapa@gmail.com',
+        example: 'padam@gmail.com',
       },
       password: {
         type: 'string',
-        example: 'padam786',
+        example: '12345678',
       },
     },
   })
@@ -71,7 +83,7 @@ export class AuthController {
   @HttpCode(HttpStatus.OK)
   async refreshToken(@Req() request) {
     const response = await this.authService.createRefreshToken(request.user.id);
-    return createResponse(HttpStatus.OK, "Refresh Token", response);
+    return createResponse(HttpStatus.OK, 'Refresh Token', response);
   }
 
   //google login http method
@@ -89,18 +101,15 @@ export class AuthController {
     res.redirect(`${process.env.FRONTEND_URL}?code=${generateCode.code}`);
   }
 
-
-
-  @Post("exchange-code")
+  @Post('exchange-code')
   @UniversalDecorator({
     summary: 'Exchange code to Token',
     responseType: ExchangeCode,
   })
-  async exchangeCode(@Body() code:ExchangeCode ){
+  async exchangeCode(@Body() code: ExchangeCode) {
     const token = await this.authService.exchangeCodeWithToken(code.code);
-    return createResponse(HttpStatus.OK, "User Fetched Successfully", token);
+    return createResponse(HttpStatus.OK, 'User Fetched Successfully', token);
   }
-
 
   //forget password http method
   @Post('forget-password')
@@ -130,16 +139,50 @@ export class AuthController {
     );
   }
 
-  
   @Post('enable-2fa')
-  @UseGuards(LocalAuthGuard, BlockToManyRequest)
   @UniversalDecorator({
     summary: '2Factor Authentication',
-    responseType: resetPasswordDTO,
+    responseType: '',
+    role: 'USER',
   })
+  @UseGuards(BlockToManyRequest)
   async enable2fa(@Request() req): Promise<any> {
-    console.log(req)
-    // return this.authService.enable2fa(req.user.sub);
+    const twofaenabled = await this.authService.enable2fa(req.user.id);
+    return createResponse(
+      HttpStatus.OK,
+      'Enable 2FA successfully With Secert Key , Dont share with others',
+      twofaenabled,
+    );
   }
 
+
+  @Post('disable-2fa')
+  @UniversalDecorator({
+    summary: 'Disable 2Factor Authentication',
+    responseType: '',
+    role: 'USER',
+  })
+
+  async disable2fa(@Request() req): Promise<any> {
+    const disable2fa = await this.authService.disable2fa(req.user.id);
+    return createResponse(
+      HttpStatus.OK,
+      'Disable 2FA successfully',
+      disable2fa,
+    );
+  }
+
+  @Post('verify-2fa')
+  @UniversalDecorator({
+    summary: 'Verify 2Factor Authentication',
+    responseType: '',
+    role: 'USER',
+  })
+  @UseGuards(BlockToManyRequest)
+  async verify2fa(
+    @Request() req,
+    @Body() ValidateTokenDTO: ValidateTokenDTO,
+  ): Promise<{ verified: boolean }> {
+    return this.authService.verify2fa(req.user.id, ValidateTokenDTO.token);
+  }
 }
