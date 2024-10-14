@@ -14,13 +14,30 @@ datasource db {
 }
 
 model User {
-  id          Int        @id @default(autoincrement())
-  name        String
-  email       String     @unique
-  password    String
-  twoFaSecret String?
-  enable2fa   Boolean    @default(false)
-  employe     Employee[]
+  id                       Int                 @id @default(autoincrement())
+  name                     String
+  email                    String              @unique
+  password                 String
+  twoFaSecret              String?
+  enable2fa                Boolean             @default(false)
+  employe                  Employee[]
+  createdAt                DateTime            @default(now())
+  passwordChangedAt        DateTime?
+  passwordResetToken       String?
+  passwordResetTokenExpire DateTime?
+  AuthorizationCode        AuthorizationCode[]
+  Role                     Role?               @relation(fields: [roleId], references: [id])
+  roleId                   Int?
+}
+
+model AuthorizationCode {
+  id        Int      @id @default(autoincrement())
+  code      String   @unique
+  userId    Int
+  user      User     @relation(fields: [userId], references: [id])
+  expiresAt DateTime
+  used      Boolean  @default(false)
+  createdAt DateTime @default(now())
 }
 
 model Employee {
@@ -30,4 +47,36 @@ model Employee {
   salary   Float
   user     User?  @relation(fields: [userId], references: [id])
   userId   Int
+}
+
+model Role {
+  id          Int              @id @default(autoincrement())
+  name        roles            @unique @default(USER)
+  users       User[]
+  createdAt   DateTime         @default(now())
+  updatedAt   DateTime         @updatedAt
+  permissions RolePermission[]
+}
+
+enum roles {
+  ADMIN
+  USER
+}
+
+model Permission {
+  id        Int              @id @default(autoincrement())
+  name      String           @unique
+  roles     RolePermission[]
+  createdAt DateTime         @default(now())
+  updatedAt DateTime         @updatedAt
+}
+
+model RolePermission {
+  id           Int        @id @default(autoincrement())
+  roleId       Int
+  role         Role       @relation(fields: [roleId], references: [id], onDelete: Cascade)
+  permissionId Int
+  permission   Permission @relation(fields: [permissionId], references: [id], onDelete: Cascade)
+
+  @@unique([roleId, permissionId])
 }

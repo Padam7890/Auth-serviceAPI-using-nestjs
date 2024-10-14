@@ -3,9 +3,10 @@ import { AppModule } from './app.module';
 import { AllExceptionsFilter } from './http-exception.filter';
 import { ValidationPipe } from '@nestjs/common';
 import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
+import { NestExpressApplication } from '@nestjs/platform-express';
 
 async function bootstrap() {
-  const app = await NestFactory.create(AppModule);
+  const app = await NestFactory.create<NestExpressApplication>(AppModule);
   app.useGlobalPipes(
     new ValidationPipe({
       transform: true,
@@ -13,6 +14,7 @@ async function bootstrap() {
       forbidNonWhitelisted: true,
     }),
   );
+  app.setGlobalPrefix("/api/v1");
   app.useGlobalFilters(new AllExceptionsFilter());
   const config = new DocumentBuilder() 
     .setTitle('Auth Service')
@@ -28,6 +30,6 @@ async function bootstrap() {
     .build();
   const document = SwaggerModule.createDocument(app, config); 
   SwaggerModule.setup('api', app, document);
-  await app.listen(3000);
+  await app.listen(3001);
 }
 bootstrap();

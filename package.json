@@ -9,6 +9,7 @@
     "build": "nest build",
     "format": "prettier --write \"src/**/*.ts\" \"test/**/*.ts\"",
     "start": "nest start",
+    "seed": "ts-node prisma/seed.ts",
     "start:dev": "nest start --watch",
     "start:debug": "nest start --debug --watch",
     "start:prod": "node dist/main",
@@ -20,6 +21,9 @@
     "test:e2e": "jest --config ./test/jest-e2e.json"
   },
   "dependencies": {
+    "@nestjs/throttler": "^6.2.1",
+    "@nestjs/passport": "^10.0.3",
+    "@nestjs-modules/mailer": "^2.0.2",
     "@nestjs/common": "^10.0.0",
     "@nestjs/config": "^3.2.3",
     "@nestjs/core": "^10.0.0",
@@ -34,7 +38,12 @@
     "class-validator": "^0.14.1",
     "reflect-metadata": "^0.2.0",
     "rxjs": "^7.8.1",
-    "speakeasy": "^2.0.0"
+    "speakeasy": "^2.0.0",
+    "crypto": "^1.0.1",
+    "passport-google-oauth20": "^2.0.0",
+    "passport-jwt": "^4.0.1",
+    "passport-local": "^1.0.0"
+
   },
   "devDependencies": {
     "@nestjs/cli": "^10.0.0",
