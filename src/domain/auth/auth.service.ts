@@ -1,6 +1,4 @@
 import {
-  BadRequestException,
-  HttpStatus,
   Inject,
   Injectable,
   UnauthorizedException,
@@ -14,7 +12,7 @@ import refreshJwtConfig from '../../core/config/refresh-jwt-config';
 import jwtConfig from '../../core/config/jwt.config';
 import { ConfigType } from '@nestjs/config';
 import { MailService } from '../../common/service/mail/mail.service';
-import path, { join } from 'path';
+import path from 'path';
 import ejs, { renderFile } from 'ejs';
 import { resetPasswordDTO } from './dto/auth';
 import { IUserResponse } from '../../core/interfaces/types';
